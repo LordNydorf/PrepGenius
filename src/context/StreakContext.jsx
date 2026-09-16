@@ -3,38 +3,58 @@ import confetti from 'canvas-confetti';
 
 const StreakContext = createContext();
 
+const defaultMilestones = [
+  { days: 5, label: "Continuous Learning", unlocked: false },
+  { days: 10, label: "Persistent Effort", unlocked: false },
+  { days: 20, label: "Unstoppable", unlocked: false }
+];
+
+const defaultHistory = [
+  { day: 'Mon', active: false },
+  { day: 'Tue', active: false },
+  { day: 'Wed', active: false },
+  { day: 'Thu', active: false },
+  { day: 'Fri', active: false },
+  { day: 'Sat', active: false },
+  { day: 'Sun', active: false }
+];
+
 export const StreakProvider = ({ children }) => {
   const [streakData, setStreakData] = useState(() => {
-    const saved = localStorage.getItem('prepgenius_streak_v2');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {}
+    try {
+      const saved = localStorage.getItem('prepgenius_streak_v2');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object') {
+          return {
+            count: typeof parsed.count === 'number' ? parsed.count : 0,
+            lastDate: parsed.lastDate || null,
+            totalXP: typeof parsed.totalXP === 'number' ? parsed.totalXP : 0,
+            checkedInToday: Boolean(parsed.checkedInToday),
+            history: Array.isArray(parsed.history) && parsed.history.length === 7 ? parsed.history : defaultHistory,
+            milestones: Array.isArray(parsed.milestones) ? parsed.milestones : defaultMilestones
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to parse prepgenius_streak_v2 from localStorage, resetting:', e);
     }
     return {
       count: 0,
       lastDate: null,
       totalXP: 0,
       checkedInToday: false,
-      history: [
-        { day: 'Mon', active: false },
-        { day: 'Tue', active: false },
-        { day: 'Wed', active: false },
-        { day: 'Thu', active: false },
-        { day: 'Fri', active: false },
-        { day: 'Sat', active: false },
-        { day: 'Sun', active: false }
-      ],
-      milestones: [
-        { days: 5, label: "Continuous Learning", unlocked: false },
-        { days: 10, label: "Persistent Effort", unlocked: false },
-        { days: 20, label: "Unstoppable", unlocked: false }
-      ]
+      history: defaultHistory,
+      milestones: defaultMilestones
     };
   });
 
   useEffect(() => {
-    localStorage.setItem('prepgenius_streak_v2', JSON.stringify(streakData));
+    try {
+      localStorage.setItem('prepgenius_streak_v2', JSON.stringify(streakData));
+    } catch (err) {
+      console.warn('Failed to write prepgenius_streak_v2 to localStorage:', err);
+    }
   }, [streakData]);
 
   // Check in for the day

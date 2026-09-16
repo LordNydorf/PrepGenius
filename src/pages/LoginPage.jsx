@@ -1,50 +1,32 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Lock, Mail, ArrowRight } from 'lucide-react';
+import { User, ShieldCheck, BookOpen, ArrowRight, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const LoginPage = () => {
-  const [isRegister, setIsRegister] = useState(false);
-  const [formData, setFormData] = useState({
-    username: '',
-    fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    targetExam: 'CAT 2026',
-    agreeTerms: false
-  });
-  const [error, setError] = useState('');
-  const { login } = useAuth();
+  const { user, login } = useAuth();
   const navigate = useNavigate();
+
+  const [formData, setFormData] = useState({
+    fullName: user?.fullName || '',
+    username: user?.username || '',
+    email: user?.email || '',
+    targetExam: user?.targetExam || 'CAT 2026'
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    setError('');
 
-    if (isRegister) {
-      if (formData.password !== formData.confirmPassword) {
-        setError('Passwords do not match');
-        return;
-      }
-      if (!formData.agreeTerms) {
-        setError('Please agree to the Terms & Conditions');
-        return;
-      }
-      login({
-        username: formData.username || formData.email.split('@')[0],
-        email: formData.email,
-        fullName: formData.fullName || formData.username,
-        targetExam: formData.targetExam
-      });
-    } else {
-      login({
-        username: formData.username || 'PrepScholar',
-        email: formData.email || 'student@prepgenius.edu',
-        fullName: formData.fullName || 'Prep Scholar',
-        targetExam: formData.targetExam
-      });
-    }
+    const username = formData.username.trim() || (formData.email ? formData.email.split('@')[0] : 'PrepScholar');
+    const fullName = formData.fullName.trim() || username;
+    const email = formData.email.trim() || `${username.toLowerCase()}@prepgenius.local`;
+
+    login({
+      username,
+      fullName,
+      email,
+      targetExam: formData.targetExam
+    });
 
     navigate('/dashboard');
   };
@@ -52,12 +34,23 @@ export const LoginPage = () => {
   const handleGuestLogin = () => {
     login({
       username: 'Guest Scholar',
-      email: 'guest@prepgenius.edu',
+      email: 'guest@prepgenius.local',
       fullName: 'Guest Scholar',
       targetExam: 'CAT & GATE'
     });
     navigate('/dashboard');
   };
+
+  const examOptions = [
+    'CAT 2026',
+    'GATE CS 2026',
+    'GATE ECE 2026',
+    'JEE Advanced',
+    'NEET UG',
+    'UPSC Civil Services',
+    'Placement & Coding',
+    'General Studies'
+  ];
 
   return (
     <div
@@ -74,13 +67,14 @@ export const LoginPage = () => {
         className="clean-card"
         style={{
           width: '100%',
-          maxWidth: '440px',
+          maxWidth: '460px',
           padding: '2.25rem',
-          background: 'var(--bg-card)'
+          background: 'var(--bg-card)',
+          borderRadius: '12px'
         }}
       >
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.85rem' }}>
             <img src="/favicon.svg" alt="PrepGenius" style={{ height: '32px', width: '32px' }} />
             <span
@@ -93,115 +87,43 @@ export const LoginPage = () => {
               PrepGenius
             </span>
           </Link>
-          <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            {isRegister ? 'Create an Account' : 'Sign In'}
+          <h2 style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '0.25rem' }}>
+            {user ? 'Update Student Profile' : 'Student Profile Setup'}
           </h2>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            {isRegister ? 'Register to save quizzes and sample papers' : 'Sign in to access your dashboard and study streak'}
+            Set up your learning profile to personalize your dashboard and study goals.
           </p>
         </div>
 
-        {/* Tab Toggle */}
+        {/* Transparent Privacy & Security Notice */}
         <div
           style={{
             display: 'flex',
-            background: 'var(--bg-secondary)',
-            padding: '0.25rem',
-            borderRadius: '6px',
+            alignItems: 'flex-start',
+            gap: '0.65rem',
+            padding: '0.75rem 0.85rem',
+            borderRadius: '8px',
+            background: 'rgba(59, 130, 246, 0.08)',
+            border: '1px solid rgba(59, 130, 246, 0.2)',
             marginBottom: '1.5rem'
           }}
         >
-          <button
-            type="button"
-            onClick={() => { setIsRegister(false); setError(''); }}
-            style={{
-              flex: 1,
-              padding: '0.5rem',
-              borderRadius: '4px',
-              border: 'none',
-              background: !isRegister ? 'var(--bg-card)' : 'transparent',
-              color: !isRegister ? 'var(--primary)' : 'var(--text-muted)',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              boxShadow: !isRegister ? 'var(--shadow-sm)' : 'none'
-            }}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            onClick={() => { setIsRegister(true); setError(''); }}
-            style={{
-              flex: 1,
-              padding: '0.5rem',
-              borderRadius: '4px',
-              border: 'none',
-              background: isRegister ? 'var(--bg-card)' : 'transparent',
-              color: isRegister ? 'var(--primary)' : 'var(--text-muted)',
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              cursor: 'pointer',
-              boxShadow: isRegister ? 'var(--shadow-sm)' : 'none'
-            }}
-          >
-            Register
-          </button>
+          <ShieldCheck size={18} color="var(--primary)" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.45, margin: 0 }}>
+            <strong>Local &amp; Private:</strong> PrepGenius operates entirely client-side. No passwords or server accounts needed—your bookmarks and quiz streaks stay right in your browser.
+          </p>
         </div>
 
-        {error && (
-          <div
-            style={{
-              padding: '0.65rem 0.85rem',
-              borderRadius: '6px',
-              background: 'rgba(220, 38, 38, 0.08)',
-              color: 'var(--accent-red)',
-              fontSize: '0.85rem',
-              marginBottom: '1rem',
-              fontWeight: 500
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-          {isRegister && (
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-                Full Name
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="Your full name"
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '0.65rem 0.85rem',
-                  borderRadius: '6px',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--text-primary)',
-                  outline: 'none',
-                  fontSize: '0.9rem',
-                  fontFamily: 'inherit'
-                }}
-              />
-            </div>
-          )}
-
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-              Username or Email
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--text-primary)' }}>
+              Full Name
             </label>
             <input
               type="text"
-              required
-              placeholder="Username or email address"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value, username: e.target.value })}
+              placeholder="e.g. Alex Sharma"
+              value={formData.fullName}
+              onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
               style={{
                 width: '100%',
                 padding: '0.65rem 0.85rem',
@@ -217,15 +139,14 @@ export const LoginPage = () => {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-              Password
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--text-primary)' }}>
+              Username or Handle
             </label>
             <input
-              type="password"
-              required
-              placeholder="Password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              type="text"
+              placeholder="e.g. prep_scholar"
+              value={formData.username}
+              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
               style={{
                 width: '100%',
                 padding: '0.65rem 0.85rem',
@@ -240,49 +161,51 @@ export const LoginPage = () => {
             />
           </div>
 
-          {isRegister && (
-            <div>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                required
-                placeholder="Confirm password"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '0.65rem 0.85rem',
-                  borderRadius: '6px',
-                  background: 'var(--bg-secondary)',
-                  border: '1px solid var(--border-color)',
-                  color: 'var(--text-primary)',
-                  outline: 'none',
-                  fontSize: '0.9rem',
-                  fontFamily: 'inherit'
-                }}
-              />
-            </div>
-          )}
-
-          {isRegister && (
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', cursor: 'pointer', marginTop: '0.25rem' }}>
-              <input
-                type="checkbox"
-                checked={formData.agreeTerms}
-                onChange={(e) => setFormData({ ...formData, agreeTerms: e.target.checked })}
-              />
-              I agree to the Terms & Conditions
+          <div>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '0.35rem', color: 'var(--text-primary)' }}>
+              Target Examination
             </label>
-          )}
+            <select
+              value={formData.targetExam}
+              onChange={(e) => setFormData({ ...formData, targetExam: e.target.value })}
+              style={{
+                width: '100%',
+                padding: '0.65rem 0.85rem',
+                borderRadius: '6px',
+                background: 'var(--bg-secondary)',
+                border: '1px solid var(--border-color)',
+                color: 'var(--text-primary)',
+                outline: 'none',
+                fontSize: '0.9rem',
+                fontFamily: 'inherit',
+                cursor: 'pointer'
+              }}
+            >
+              {examOptions.map((exam) => (
+                <option key={exam} value={exam}>
+                  {exam}
+                </option>
+              ))}
+            </select>
+          </div>
 
           <button
             type="submit"
             className="btn btn-primary"
-            style={{ width: '100%', padding: '0.75rem', marginTop: '0.5rem' }}
+            style={{
+              width: '100%',
+              padding: '0.75rem',
+              marginTop: '0.5rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              fontSize: '0.9rem',
+              fontWeight: 600
+            }}
           >
-            {isRegister ? 'Register' : 'Sign In'}
+            <span>{user ? 'Save Profile' : 'Enter Dashboard'}</span>
+            <ArrowRight size={16} />
           </button>
         </form>
 

@@ -4,34 +4,63 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('prepgenius_user');
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem('prepgenius_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch (err) {
+      console.warn('Failed to parse prepgenius_user from localStorage, resetting to null:', err);
+      return null;
+    }
   });
 
   const [bookmarks, setBookmarks] = useState(() => {
-    const saved = localStorage.getItem('prepgenius_bookmarks');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('prepgenius_bookmarks');
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      console.warn('Failed to parse prepgenius_bookmarks from localStorage, resetting to []:', err);
+      return [];
+    }
   });
 
   const [quizHistory, setQuizHistory] = useState(() => {
-    const saved = localStorage.getItem('prepgenius_quiz_history');
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem('prepgenius_quiz_history');
+      const parsed = saved ? JSON.parse(saved) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      console.warn('Failed to parse prepgenius_quiz_history from localStorage, resetting to []:', err);
+      return [];
+    }
   });
 
   useEffect(() => {
-    if (user) {
-      localStorage.setItem('prepgenius_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('prepgenius_user');
+    try {
+      if (user) {
+        localStorage.setItem('prepgenius_user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('prepgenius_user');
+      }
+    } catch (err) {
+      console.warn('Failed to write prepgenius_user to localStorage:', err);
     }
   }, [user]);
 
   useEffect(() => {
-    localStorage.setItem('prepgenius_bookmarks', JSON.stringify(bookmarks));
+    try {
+      localStorage.setItem('prepgenius_bookmarks', JSON.stringify(bookmarks));
+    } catch (err) {
+      console.warn('Failed to write prepgenius_bookmarks to localStorage:', err);
+    }
   }, [bookmarks]);
 
   useEffect(() => {
-    localStorage.setItem('prepgenius_quiz_history', JSON.stringify(quizHistory));
+    try {
+      localStorage.setItem('prepgenius_quiz_history', JSON.stringify(quizHistory));
+    } catch (err) {
+      console.warn('Failed to write prepgenius_quiz_history to localStorage:', err);
+    }
   }, [quizHistory]);
 
   const login = (userData) => {
